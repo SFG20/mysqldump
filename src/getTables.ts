@@ -34,6 +34,7 @@ async function getTables(
         isView: r.Table_type === 'VIEW',
         columns: {},
         columnsOrdered: [],
+        columnsToDump: [],
         triggers: [],
     }));
 
@@ -71,11 +72,15 @@ async function getTables(
                     .split('(')[0]
                     .toLowerCase(),
                 nullable: c.Null === 'YES',
+                dump: !c.Extra.toUpperCase().includes('GENERATED'),
             };
 
             return acc;
         }, {});
         tables[i].columnsOrdered = cols.map(c => c.Field);
+        tables[i].columnsToDump = tables[i].columnsOrdered.filter(
+            c => tables[i].columns[c].dump,
+        );
     });
 
     return tables;

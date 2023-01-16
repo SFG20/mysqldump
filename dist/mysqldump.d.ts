@@ -261,6 +261,7 @@ export interface ColumnList {
 		 * True if the column is nullable, false otherwise.
 		 */
 		nullable: boolean;
+		dump: boolean;
 	};
 }
 export interface Table {
@@ -286,6 +287,7 @@ export interface Table {
 	 * An ordered list of columns (for consistently outputing as per the DB definition)
 	 */
 	columnsOrdered: Array<string>;
+	columnsToDump: Array<string>;
 	/**
 	 * True if the table is actually a view, false otherwise.
 	 */

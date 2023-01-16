@@ -18,7 +18,7 @@ function buildInsert(
 ): string {
     const sql = format(
         [
-            `INSERT INTO \`${table.name}\` (\`${table.columnsOrdered.join(
+            `INSERT INTO \`${table.name}\` (\`${table.columnsToDump.join(
                 '`,`',
             )}\`)`,
             `VALUES ${values.join(',')};`,
@@ -30,7 +30,7 @@ function buildInsert(
     return sql.replace(/NOFORMAT_WRAP\("##(.+?)##"\)/g, '$1');
 }
 function buildInsertValue(row: QueryRes, table: Table): string {
-    return `(${table.columnsOrdered.map(c => row[c]).join(',')})`;
+    return `(${table.columnsToDump.map(c => row[c]).join(',')})`;
 }
 
 function executeSql(connection: mysql.Connection, sql: string): Promise<void> {
@@ -155,11 +155,12 @@ async function getDataDump(
                     ? ` WHERE ${options.where[table.name]}`
                     : '';
                 const query = connection.query(
-                    `SELECT * FROM \`${table.name}\`${where}`,
+                    `SELECT \`${table.columnsToDump.join('`,`')}\` FROM \`${
+                        table.name
+                    }\`${where}`,
                 );
 
                 let rowQueue: Array<string> = [];
-
                 // stream the data to the file
                 query.on('result', (row: QueryRes) => {
                     // build the values list
@@ -212,7 +213,7 @@ async function getDataDump(
     }
 
     // clean up our connections
-    await ((connection.end() as unknown) as Promise<void>);
+    await (connection.end() as unknown as Promise<void>);
 
     if (outFileStream) {
         // tidy up the file stream, making sure writes are 100% flushed before continuing
